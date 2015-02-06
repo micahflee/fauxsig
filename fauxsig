@@ -16,7 +16,7 @@ URL=$1
 FILENAME=$(basename "$URL")
 
 # random directories to work in
-CUR_DIR=${PWD##*/}
+CUR_DIR=${PWD}
 DIR1=/tmp/fauxsig-$RANDOM
 DIR2=/tmp/fauxsig-$RANDOM
 FILENAME1=$DIR1/$FILENAME
