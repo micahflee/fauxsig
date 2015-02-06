@@ -7,3 +7,14 @@ This is a simple script to help you be more confident in downloading files that 
 ```sh
 $ fauxsig [URL]
 ```
+
+For example, you can download `nsa_clpo_report_targeted_EO12333.pdf` with more confidence like this:
+
+```sh
+$ fauxsig https://www.nsa.gov/civil_liberties/_files/nsa_clpo_report_targeted_EO12333.pdf
+[fauxsig] Downloading over your normal internet connection
+nsa_clpo_report_targeted_EO12333.pdf   100%[===========================================================================>]   3.81M  5.48MB/s   in 0.7s
+[fauxsig] Downloading over Tor
+nsa_clpo_report_targeted_EO12333.pdf   100%[===========================================================================>]   3.81M   658KB/s   in 6.7s
+[fauxsig] Hashes are the same! The download is probably fine.
+```
