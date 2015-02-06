@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# check for dependencies
+command -v wget >/dev/null 2>&1 || { echo >&2 "Can't find wget, aborting."; exit 1; }
+command -v torify >/dev/null 2>&1 || { echo >&2 "Can't find torify, aborting."; exit 1; }
+command -v sha256sum >/dev/null 2>&1 || { echo >&2 "Can't find sha256sum, aborting."; exit 1; }
+
+# arguments
+if [ "$#" -ne 1 ]; then
+    echo "usage: $0 [URL]"
+    exit 1
+fi
+
+# parse the URL to download
+URL=$1
+FILENAME=$(basename "$URL")
+
+# random directories to work in
+CUR_DIR=${PWD##*/}
+DIR1=/tmp/fauxsig-$RANDOM
+DIR2=/tmp/fauxsig-$RANDOM
+FILENAME1=$DIR1/$FILENAME
+FILENAME2=$DIR2/$FILENAME
+HASH_FILENAME1=$DIR1/${FILENAME}.sha256
+HASH_FILENAME2=$DIR2/${FILENAME}.sha256
+
+# download once
+echo "[fauxsig] Downloading over your normal internet connection"
+mkdir $DIR1
+cd $DIR1
+wget --quiet --show-progress $URL
+sha256sum $FILENAME1 | cut -d" " -f1 > $HASH_FILENAME1
+HASH1=$(cat "$HASH_FILENAME1")
+
+# download again
+echo "[fauxsig] Downloading over Tor"
+mkdir $DIR2
+cd $DIR2
+torify wget --quiet --show-progress $URL
+sha256sum $FILENAME2 | cut -d" " -f1 > $HASH_FILENAME2
+HASH2=$(cat "$HASH_FILENAME2")
+
+# do they have the same hash?
+cd $CUR_DIR
+if [ "$HASH1" = "$HASH2" ]; then
+    echo "[fauxsig] Hashes are the same! The download is probably fine."
+    mv $FILENAME1 .
+    rm -rf $DIR1
+    rm -rf $DIR2
+else
+    echo "[fauxsig] $HASH1 $FILENAME1 Downloaded over normal internet connection"
+    echo "[fauxsig] $HASH2 $FILENAME2 Downloaded over Tor"
+    echo "[fauxsig] Warning, hashes do not match! This might be an attack."
+    echo "[fauxsig] You must manually delete the temporary files."
+fi
+
